@@ -30,16 +30,12 @@ export function detectBrowser(): BrowserInfo {
 
   let osName = 'Unknown'
   let osVersion = ''
+  // Order matters: Android UAs contain "Linux" and iOS UAs contain "Mac OS X",
+  // so the mobile OSes must be checked BEFORE Linux/macOS.
   if (ua.includes('Windows')) {
     osName = 'Windows'
     const m = ua.match(/Windows NT (\d+\.\d+)/)
     osVersion = m?.[1] ?? ''
-  } else if (ua.includes('Mac OS X')) {
-    osName = 'macOS'
-    const m = ua.match(/Mac OS X (\d+[._]\d+[._]?\d*)/)
-    osVersion = m?.[1]?.replace(/_/g, '.') ?? ''
-  } else if (ua.includes('Linux')) {
-    osName = 'Linux'
   } else if (ua.includes('Android')) {
     osName = 'Android'
     const m = ua.match(/Android (\d+(\.\d+)?)/)
@@ -48,6 +44,12 @@ export function detectBrowser(): BrowserInfo {
     osName = 'iOS'
     const m = ua.match(/OS (\d+_\d+)/)
     osVersion = m?.[1]?.replace('_', '.') ?? ''
+  } else if (ua.includes('Mac OS X')) {
+    osName = 'macOS'
+    const m = ua.match(/Mac OS X (\d+[._]\d+[._]?\d*)/)
+    osVersion = m?.[1]?.replace(/_/g, '.') ?? ''
+  } else if (ua.includes('Linux')) {
+    osName = 'Linux'
   }
 
   let deviceType: 'desktop' | 'mobile' | 'tablet' = 'desktop'

@@ -7,13 +7,11 @@ import { defineConfig } from 'tsup'
 //     consumer's bundler resolves them (rrweb is optional; web-vitals a dep).
 //
 //  2. IIFE (CDN / <script>): dist/rush-rum.global.js exposing a `RushRUM` global.
-//     web-vitals is bundled. NOTE: a classic-script IIFE has no module loader, so
-//     esbuild CANNOT keep the dynamic import('rrweb') external — rrweb is inlined
-//     and the CDN bundle is self-contained INCLUDING session replay (~290KB raw /
-//     ~80KB gzip). The `external: ['rrweb']` below is thus effectively a no-op for
-//     the IIFE. The ESM build (1) does externalize rrweb, so npm/bundler consumers
-//     stay lean (~15KB) and pull rrweb only if they enable replay.
-//     (Follow-up for a lean CDN core: ship a separate replay-less IIFE entry.)
+//     Built from global.ts (LEAN core) which uses makeRushRUM() WITHOUT the replay
+//     module, so replay.ts — and therefore rrweb — is never in this bundle's
+//     import graph. The CDN file stays small (no ~200KB rrweb). web-vitals IS
+//     bundled (tiny) so Web Vitals work standalone. Session replay over a <script>
+//     drop-in is intentionally unsupported here; use the npm/ESM package for replay.
 export default defineConfig([
   {
     entry: { index: 'src/index.ts' },

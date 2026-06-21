@@ -18,6 +18,14 @@
 - **Long tasks + LoAF** (`trackLongTasks`, default **on**): `PerformanceObserver` emits `long_task` events and, where supported, `loaf` (Long Animation Frame) events.
 - **Frustration signals** (with `trackInteractions`): emits `frustration` events for `rage_click` (>3 clicks on one element within 1s), `dead_click` (no DOM/URL/scroll change within 3s), and `error_click` (a JS error within 1s of a click).
 
+### Packaging (P3)
+- **tsup dual build**: minified ESM (`dist/index.js`, rrweb/web-vitals external) + a `<script>`/CDN IIFE (`dist/rush-rum.global.js`, global `RushRUM`); `unpkg`/`jsdelivr` point at the IIFE; `sideEffects: false`.
+- **`rrweb` is now an `optionalDependency`** (web-vitals stays a dependency). Vitest suite + CI; the publish workflow is gated on `typecheck` + `test`.
+- **Lean CDN core**: the IIFE is built from a replay-less entry, so rrweb (~200KB) is **not** in the CDN bundle. Session replay over a `<script>` drop-in is unsupported — use the npm/ESM package for replay.
+
+### Fixes
+- **OS detection**: iPhone/iPad now report `iOS` and Android reports `Android` (previously `macOS`/`Linux`, because those substrings appear in the mobile UA strings and were matched first).
+
 ### Notes
 - Wire format is unchanged and backward-compatible: only new optional config, new methods, and new `event_type` values (`long_task`, `loaf`, `frustration`) carried in existing fields. `RumEvent.timestamp` remains a numeric (ns) value.
 - `destroy()` now tears down every new observer, timer, and listener.
