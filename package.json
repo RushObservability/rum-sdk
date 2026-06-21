@@ -1,5 +1,5 @@
 {
-  "name": "@rush/rum",
+  "name": "@rushobservability/rum",
   "version": "0.1.0",
   "description": "Rush RUM (Real User Monitoring) browser SDK",
   "type": "module",
