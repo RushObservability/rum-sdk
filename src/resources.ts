@@ -1,6 +1,10 @@
-import { pushEvent, getConfig } from './core'
+import { pushEvent, getConfig, sanitizeUrl } from './core'
+
+let patched = false
 
 export function initResources(): void {
+  if (patched) return // never double-wrap fetch/XHR
+  patched = true
   patchFetch()
   patchXHR()
 }
@@ -47,7 +51,7 @@ function patchFetch(): void {
 
       pushEvent({
         event_type: 'resource',
-        event_name: url,
+        event_name: sanitizeUrl(url),
         duration_ms: durationMs,
         trace_id: traceId,
         span_id: spanId,
@@ -59,7 +63,7 @@ function patchFetch(): void {
       const durationMs = performance.now() - start
       pushEvent({
         event_type: 'resource',
-        event_name: url,
+        event_name: sanitizeUrl(url),
         duration_ms: durationMs,
         trace_id: traceId,
         span_id: spanId,
@@ -98,7 +102,7 @@ function patchXHR(): void {
       const durationMs = performance.now() - start
       pushEvent({
         event_type: 'resource',
-        event_name: url,
+        event_name: sanitizeUrl(url),
         duration_ms: durationMs,
         trace_id: traceId,
         span_id: spanId,

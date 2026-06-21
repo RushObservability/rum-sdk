@@ -37,6 +37,9 @@ RushRUM.trackEvent('checkout_completed', { plan: 'pro', amount: 49 })
 
 // Flush the queue manually (e.g. before a hard navigation)
 RushRUM.flush()
+
+// Stop collecting + detach handlers/timers (tests, SPA hot-reload)
+RushRUM.destroy()
 ```
 
 ### Configuration
@@ -56,6 +59,12 @@ RushRUM.flush()
 | `trackSessionReplay` | `boolean` | `false` | DOM session replay (rrweb) |
 | `propagateTraces` | `{ origins: RegExp[] }` | — | Inject trace headers on matching XHR/fetch origins |
 | `replayEndpoint` | `string` | `<endpoint>/rum/replay/ingest` | Override the replay ingest URL |
+| `captureQueryParams` | `boolean` | `false` | Keep query strings + hash on captured URLs. Off by default — query params often carry tokens/PII |
+| `maskInteractionText` | `boolean` | `false` | Drop clicked-element text from interaction events (keep only tag/id/classes) |
+
+`sampleRate` is decided **once per session** and applied to every event, so sampled sessions are complete (no half-captured sessions).
+
+`init()` is a no-op outside the browser (SSR-safe) and ignores duplicate calls. `RushRUM.destroy()` stops collection and detaches handlers/timers (useful for tests / SPA hot-reload).
 
 ## Build
 

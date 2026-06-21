@@ -1,8 +1,13 @@
 import { pushEvent } from './core'
 
+let patched = false
+
 export function initPageViews(): void {
   // Track initial page load
   trackPageView()
+
+  if (patched) return // don't re-wrap history on a repeat init
+  patched = true
 
   // SPA navigation: history.pushState / replaceState
   const origPush = history.pushState.bind(history)
