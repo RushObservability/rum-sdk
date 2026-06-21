@@ -1,5 +1,6 @@
 const SESSION_KEY = 'rush_rum_sid'
 const SESSION_TS_KEY = 'rush_rum_sts'
+const SESSION_SAMPLED_KEY = 'rush_rum_smp'
 const TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
 
 function generateId(): string {
@@ -27,10 +28,34 @@ export function getSessionId(): string {
     const id = generateId()
     sessionStorage.setItem(SESSION_KEY, id)
     sessionStorage.setItem(SESSION_TS_KEY, String(now))
+    // New logical session → re-decide sampling next time it's asked.
+    sessionStorage.removeItem(SESSION_SAMPLED_KEY)
     return id
   } catch {
     // sessionStorage not available (e.g. incognito overflow)
     return generateId()
+  }
+}
+
+/**
+ * Decide whether THIS session is sampled — once per session, cached so every
+ * event in the session shares the same decision. Returns true if it should be
+ * recorded. Cleared whenever a new session id is minted (see getSessionId).
+ */
+export function isSessionSampled(sampleRate: number): boolean {
+  if (sampleRate >= 1) return true
+  if (sampleRate <= 0) return false
+  try {
+    // Ensure a session id exists first, so a fresh session clears any stale flag.
+    getSessionId()
+    const stored = sessionStorage.getItem(SESSION_SAMPLED_KEY)
+    if (stored !== null) return stored === '1'
+    const sampled = Math.random() < sampleRate
+    sessionStorage.setItem(SESSION_SAMPLED_KEY, sampled ? '1' : '0')
+    return sampled
+  } catch {
+    // No sessionStorage → fall back to a per-load decision.
+    return Math.random() < sampleRate
   }
 }
 

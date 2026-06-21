@@ -1,5 +1,5 @@
 import type { RushRUMConfig } from './types'
-import { configure, flush, pushEvent } from './core'
+import { configure, flush, pushEvent, destroy, isInitialized } from './core'
 import { initVitals } from './vitals'
 import { initErrors } from './errors'
 import { initPageViews } from './pageview'
@@ -11,6 +11,16 @@ export type { RushRUMConfig, RumEvent, RumPayload } from './types'
 
 export const RushRUM = {
   init(config: RushRUMConfig): void {
+    // No-op outside the browser (SSR / Node) so importing + init in a universal
+    // app (Next.js, etc.) doesn't throw on window/navigator/history access.
+    if (typeof window === 'undefined') return
+    // Guard against double init() — prevents duplicate web-vitals/error/click
+    // subscriptions and timers.
+    if (isInitialized()) {
+      console.warn('[RushRUM] init() called more than once; ignoring.')
+      return
+    }
+
     configure(config)
 
     if (config.trackWebVitals !== false) {
@@ -48,6 +58,12 @@ export const RushRUM = {
    * Force flush the event queue.
    */
   flush,
+
+  /**
+   * Stop collecting and detach handlers/timers. Safe to call before a later
+   * init() (useful for tests and SPA hot-reload).
+   */
+  destroy,
 }
 
 export default RushRUM

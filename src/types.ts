@@ -3,6 +3,11 @@ export interface RushRUMConfig {
   app: { name: string; version?: string }
   environment?: string
   user?: () => { id?: string } | null
+  /**
+   * Fraction of sessions to record, 0..1 (default 1). The decision is made ONCE
+   * per session and applied to every event in it — so sessions stay coherent
+   * (you never keep a pageview but drop its errors).
+   */
   sampleRate?: number
   trackWebVitals?: boolean
   trackErrors?: boolean
@@ -13,6 +18,16 @@ export interface RushRUMConfig {
   trackSessionReplay?: boolean
   /** Override the replay ingest endpoint (defaults to endpoint with /rum/replay/ingest) */
   replayEndpoint?: string
+  /**
+   * Keep query strings + hash on captured URLs (page_url + resource URLs).
+   * Default false → they are stripped, since query params often carry tokens/PII.
+   */
+  captureQueryParams?: boolean
+  /**
+   * Drop the visible text of clicked elements from interaction events (keeps only
+   * tag/id/classes). Default false. Enable if button/link text may contain PII.
+   */
+  maskInteractionText?: boolean
 }
 
 export interface RumMeta {
