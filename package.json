@@ -14,25 +14,35 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "unpkg": "dist/rush-rum.global.js",
+  "jsdelivr": "dist/rush-rum.global.js",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }
   },
+  "sideEffects": false,
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "rrweb": "^2.0.0-alpha.20",
     "web-vitals": "^4.2.0"
   },
+  "optionalDependencies": {
+    "rrweb": "^2.0.0-alpha.20"
+  },
   "devDependencies": {
-    "typescript": "^5.5.0"
+    "happy-dom": "^15.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
   },
   "license": "MIT"
 }
