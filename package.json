@@ -1,0 +1,30 @@
+{
+  "name": "@rush/rum",
+  "version": "0.1.0",
+  "description": "Rush RUM (Real User Monitoring) browser SDK",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "rrweb": "^2.0.0-alpha.20",
+    "web-vitals": "^4.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "license": "MIT"
+}
