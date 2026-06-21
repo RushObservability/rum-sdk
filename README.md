@@ -1,17 +1,17 @@
-# @rushobservability/rum
+# @rushobservability/rum-sdk
 
 Real User Monitoring (RUM) browser SDK for [Rush Observability](https://github.com/RushObservability). Lightweight, dependency-light, and framework-agnostic — it captures Web Vitals, JS errors, page views, interactions, resource timing, and optional session replay, then ships them to your Rush ingest endpoint.
 
 ## Install
 
 ```bash
-npm install @rushobservability/rum
+npm install @rushobservability/rum-sdk
 ```
 
 ## Usage
 
 ```ts
-import RushRUM from '@rushobservability/rum'
+import RushRUM from '@rushobservability/rum-sdk'
 
 RushRUM.init({
   endpoint: 'https://your-rush-host/rum/ingest',

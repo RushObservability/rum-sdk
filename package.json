@@ -1,8 +1,16 @@
 {
-  "name": "@rushobservability/rum",
+  "name": "@rushobservability/rum-sdk",
   "version": "0.1.0",
   "description": "Rush RUM (Real User Monitoring) browser SDK",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RushObservability/rum-sdk.git"
+  },
+  "homepage": "https://github.com/RushObservability/rum-sdk#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
