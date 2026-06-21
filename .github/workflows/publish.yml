@@ -1,9 +1,17 @@
 name: Publish to npm
 
-# Publishes @rushobservability/rum-sdk when you cut a GitHub Release
-# (or trigger manually). Requires an npm **Automation** access token stored as
-# the repo secret NPM_TOKEN — automation tokens bypass the 2FA one-time-password
-# prompt, which interactive publish requires.
+# Publishes @rushobservability/rum-sdk on a GitHub Release (or manual dispatch).
+#
+# Auth = npm Trusted Publishing (OIDC): there is NO npm token stored in the repo.
+# The job exchanges a short-lived GitHub OIDC token for scoped publish rights, so
+# there is no secret for a malicious PR to steal. npm verifies the exact repo +
+# workflow identity, and this workflow never runs on pull_request.
+#
+# Requires (one-time, on npmjs.com → the package → Settings → Trusted Publisher):
+#   Provider: GitHub Actions
+#   Org/Repo: RushObservability/rum-sdk
+#   Workflow: publish.yml
+#   Environment: npm-publish
 on:
   release:
     types: [published]
@@ -12,19 +20,23 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # Deployment gate: the `npm-publish` Environment carries required-reviewer
+    # approval + a branch rule (main/tags only), so a publish pauses for a human
+    # OK and can't run from an arbitrary ref even after a merge.
+    environment: npm-publish
     permissions:
       contents: read
-      id-token: write        # enables npm provenance (verifiable build origin)
+      id-token: write        # required for OIDC trusted publishing + provenance
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           registry-url: https://registry.npmjs.org
 
+      # Trusted Publishing (OIDC) needs npm >= 11.5.1.
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run build
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

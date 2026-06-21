@@ -1,0 +1,4 @@
+# Changes to CI/CD workflows and publish config require review by the owner.
+# Pair this with branch protection: "Require review from Code Owners" on main.
+/.github/        @mzupan
+/package.json    @mzupan
