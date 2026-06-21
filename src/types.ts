@@ -28,6 +28,43 @@ export interface RushRUMConfig {
    * tag/id/classes). Default false. Enable if button/link text may contain PII.
    */
   maskInteractionText?: boolean
+  /**
+   * Track long tasks (>50ms) and Long Animation Frames (LoAF) via
+   * PerformanceObserver. Default true — lightweight and low-volume.
+   */
+  trackLongTasks?: boolean
+  /**
+   * gzip the request body via CompressionStream and set Content-Encoding: gzip.
+   * Default false. ONLY enable if your ingest endpoint decodes gzip — the current
+   * Rush backend does not, so leaving this off keeps bodies plain JSON. The
+   * unload/beacon path is always sent uncompressed.
+   */
+  compress?: boolean
+  /**
+   * Mutate or drop events before they are queued. Return the (possibly mutated)
+   * event to keep it, or null to drop it. Thrown errors are swallowed so a buggy
+   * hook never breaks collection.
+   */
+  beforeSend?: (event: RumEvent) => RumEvent | null
+  /**
+   * Replay privacy level (default 'mask'). Controls rrweb masking:
+   * - 'mask': mask all inputs + all text + block media (private by default).
+   * - 'mask-user-input': mask all inputs only, leave text visible.
+   * - 'allow': no masking.
+   */
+  replayPrivacy?: 'mask' | 'mask-user-input' | 'allow'
+  /** Extra CSS selector for text/elements to mask in replay (merged with [data-pii]). */
+  replayMaskSelector?: string
+  /** Extra CSS selector for elements to block (not record) in replay. */
+  replayBlockSelector?: string
+  /** Extra CSS selector for text to leave un-masked in replay (overrides masking). */
+  replayUnmaskSelector?: string
+  /**
+   * Scrub or drop replay events client-side before they are buffered. Return the
+   * (possibly mutated) event to keep it, or null to drop it. Analogous to
+   * Sentry's beforeAddRecordingEvent. Thrown errors are swallowed.
+   */
+  replayBeforeAddEvent?: (event: unknown) => unknown | null
 }
 
 export interface RumMeta {
