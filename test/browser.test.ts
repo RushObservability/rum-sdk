@@ -70,10 +70,9 @@ describe('detectBrowser UA parsing', () => {
     const info = detectBrowser()
     expect(info.browserName).toBe('Chrome')
     expect(info.deviceType).toBe('mobile')
-    // The Android UA string "Linux; Android 14" matches the Linux branch first
-    // (checked before Android), so osName resolves to Linux. This pins the
-    // current source behavior.
-    expect(info.osName).toBe('Linux')
+    // Android is checked before Linux (the UA also contains "Linux").
+    expect(info.osName).toBe('Android')
+    expect(info.osVersion).toBe('14')
   })
 
   it('detects tablet on iPad', () => {
@@ -82,10 +81,8 @@ describe('detectBrowser UA parsing', () => {
     )
     const info = detectBrowser()
     expect(info.deviceType).toBe('tablet')
-    // Note: the iPad UA contains "Mac OS X", and detectBrowser checks Mac OS X
-    // before the iPhone|iPad|iPod branch, so osName resolves to macOS. This
-    // pins the current (intentional) source behavior, not a desired fix.
-    expect(info.osName).toBe('macOS')
+    // iPhone/iPad/iPod is checked before "Mac OS X" (which the iOS UA contains).
+    expect(info.osName).toBe('iOS')
   })
 
   it('detects mobile + iOS on iPhone', () => {
@@ -94,8 +91,8 @@ describe('detectBrowser UA parsing', () => {
     )
     const info = detectBrowser()
     expect(info.deviceType).toBe('mobile')
-    // iPhone UA also matches "Mac OS X" first → osName macOS (current behavior).
-    expect(info.osName).toBe('macOS')
+    expect(info.osName).toBe('iOS')
+    expect(info.osVersion).toBe('17.4')
   })
 
   it('falls back to Unknown for an unrecognized UA', () => {
