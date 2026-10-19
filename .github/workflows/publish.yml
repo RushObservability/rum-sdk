@@ -41,5 +41,7 @@ jobs:
       # Gate the publish on the same quality checks CI runs.
       - run: npm run typecheck
       - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
       - run: npm run build
       - run: npm publish --provenance --access public
