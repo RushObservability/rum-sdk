@@ -9,6 +9,8 @@
  * does NOT go through here (sendBeacon can't retry/compress).
  */
 
+import { internalFetch } from './network'
+
 const BUFFER_KEY = 'rush_rum_buf_v1' // versioned so a format change can't crash older readers
 const MAX_BUFFER_BYTES = 1_000_000 // ~1 MB cap across all persisted batches
 const MAX_BUFFER_BATCHES = 50
@@ -113,7 +115,7 @@ async function sendOnce(url: string, body: string, compress: boolean): Promise<b
         payload = body // compression failed — fall back to plain JSON
       }
     }
-    const res = await fetch(url, { method: 'POST', headers, body: payload, keepalive: true })
+    const res = await internalFetch(url, { method: 'POST', headers, body: payload, keepalive: true })
     if (res.status === 429 || res.status >= 500) return false
     return true
   } catch {

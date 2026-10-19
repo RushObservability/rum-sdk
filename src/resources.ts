@@ -1,4 +1,5 @@
 import { pushEvent, getConfig, sanitizeUrl } from './core'
+import { isInternalRequest } from './network'
 
 let patched = false
 
@@ -31,7 +32,10 @@ function patchFetch(): void {
   const origFetch = window.fetch.bind(window)
 
   window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+    if (isInternalRequest(init)) return origFetch(input, init)
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    const request = typeof input === 'string' || input instanceof URL ? undefined : input
+    const method = init?.method ?? request?.method ?? 'GET'
     const start = performance.now()
 
     let traceId = ''
@@ -40,7 +44,9 @@ function patchFetch(): void {
     if (shouldTraceOrigin(url)) {
       traceId = generateTraceId()
       spanId = generateSpanId()
-      const headers = new Headers(init?.headers)
+      // Explicit init.headers replaces Request headers, including an empty set.
+      // Otherwise inherit them without mutating the caller's Request/Headers.
+      const headers = new Headers(init?.headers !== undefined ? init.headers : request?.headers)
       headers.set('traceparent', `00-${traceId}-${spanId}-01`)
       init = { ...init, headers }
     }
@@ -55,7 +61,7 @@ function patchFetch(): void {
         duration_ms: durationMs,
         trace_id: traceId,
         span_id: spanId,
-        attributes: JSON.stringify({ status: response.status, method: init?.method ?? 'GET' }),
+        attributes: JSON.stringify({ status: response.status, method }),
       })
 
       return response
@@ -86,6 +92,7 @@ function patchXHR(): void {
   }
 
   XMLHttpRequest.prototype.send = function (body?: any) {
+    if (isInternalRequest(this)) return origSend.call(this, body)
     const url: string = (this as any).__wide_url ?? ''
     const method: string = (this as any).__wide_method ?? 'GET'
     const start = performance.now()

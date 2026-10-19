@@ -2,6 +2,7 @@ import type { RumEvent, RumMeta, RumPayload, RushRUMConfig } from './types'
 import { getSessionId, isSessionSampled } from './session'
 import { detectBrowser } from './browser'
 import { sendBatch, drainBuffer } from './transport'
+import { internalXHR } from './network'
 
 const MAX_BATCH = 30
 const FLUSH_INTERVAL_MS = 250
@@ -204,7 +205,7 @@ function setupBeaconFlush(): void {
     } else {
       // Sync XHR as last resort (not recommended but works for unload).
       try {
-        const xhr = new XMLHttpRequest()
+        const xhr = internalXHR()
         xhr.open('POST', config.endpoint, false)
         xhr.setRequestHeader('Content-Type', 'application/json')
         xhr.send(body)

@@ -9,6 +9,7 @@
  */
 import type { RushRUMConfig } from './types'
 import { getSessionId } from './session'
+import { internalFetch } from './network'
 
 const CHUNK_SIZE = 50          // flush after this many events
 const FLUSH_INTERVAL_MS = 5_000 // flush every 5 s regardless
@@ -42,7 +43,7 @@ function joinSelectors(...parts: Array<string | undefined>): string {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function sendChunk(events: any[]): void {
+function sendChunk(events: any[], unloading: boolean): void {
   if (!_config || events.length === 0) return
   const payload = {
     session_id: getSessionId(),
@@ -50,17 +51,19 @@ function sendChunk(events: any[]): void {
     chunk_idx: _chunkIdx++,
     events,
   }
-  fetch(replayEndpoint(), {
+  void internalFetch(replayEndpoint(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
-    keepalive: true,
+    // Active-page snapshots can exceed keepalive's 64 KiB limit. The shared
+    // transport bounds unload keepalive requests and falls back to normal fetch.
+    keepalive: unloading,
   }).catch(() => { /* best-effort */ })
 }
 
-function flushBuffer(): void {
+function flushBuffer(unloading = false): void {
   if (_buffer.length === 0) return
-  sendChunk(_buffer.splice(0))
+  sendChunk(_buffer.splice(0), unloading)
 }
 
 /**
@@ -133,7 +136,9 @@ export function initReplay(config: RushRUMConfig): void {
           }
         }
         _buffer.push(event)
-        if (_buffer.length >= CHUNK_SIZE) flushBuffer()
+        // rrweb type 2 is a full DOM snapshot. Send it while the page is active
+        // instead of holding a potentially large snapshot until unload.
+        if (event.type === 2 || _buffer.length >= CHUNK_SIZE) flushBuffer()
       },
       maskAllInputs: opts.maskAllInputs,
     }
@@ -162,9 +167,9 @@ export function initReplay(config: RushRUMConfig): void {
   _flushTimer = setInterval(flushBuffer, FLUSH_INTERVAL_MS)
 
   _onVisibility = () => {
-    if (document.visibilityState === 'hidden') flushBuffer()
+    if (document.visibilityState === 'hidden') flushBuffer(true)
   }
-  _onPageHide = flushBuffer
+  _onPageHide = () => flushBuffer(true)
   document.addEventListener('visibilitychange', _onVisibility)
   window.addEventListener('pagehide', _onPageHide)
 }
